@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gra</title>
+        <style>
+			.main {
+				text-align: center;
+			}
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <canvas id="game" width="300" height="400" style="border-top: solid; border-left: solid; border-right: solid; border-width: 1px;">
+				This text is displayed if your browser does not support HTML5 Canvas. Try later browser.
+            </canvas>
+        </div>
+    </body>
+    <script type="text/javascript">
+    	function Ball(canvas){
+    		this.x = 100 + Math.floor((Math.random() * 10) + 1);
+    		this.y = 100 + Math.floor((Math.random() * 10) + 1);
+    		this.dirX = 1;
+    		this.dirY = 1;
+    		this.angleX = 1;
+    		this.angleY = 1;
+
+    		this.context = canvas.getContext('2d');
+    		this.canvasHeight = canvas.height;
+    		this.canvasWidth = canvas.width;
+    		this.speed = 1;
+    	};
+    	Ball.prototype.draw = function() {
+			this.context.fillStyle = '#00FF00';
+    		this.context.beginPath();
+			this.context.arc(this.x, this.y, 7, 0, 2 * Math.PI, false);
+			this.context.fill();
+    	};
+    	Ball.prototype.move = function(padpos) {
+    		if((padpos.y >= (Math.round(this.y)+4) && padpos.y <= (Math.round(this.y)+7)) && this.x >= padpos.xLeft && this.x <= padpos.xRight){
+    			this.dirY = -1; this.speed += 0.05;
+    		}
+
+    		if(this.x >= (this.canvasWidth-7)) {
+    			this.dirX = -1; this.speed += 0.05;
+    		};
+    		if(this.x <= 7)
+			{
+				this.dirX = 1; this.speed += 0.05;
+			}
+    		if(this.y <= 7)
+			{
+				this.dirY = 1; this.speed += 0.05;
+			}
+
+    		this.x = this.x + this.angleX * this.dirX * this.speed;
+    		this.y = this.y + this.angleY * this.dirY * this.speed;
+
+    		if(this.x < 7) this.x = 7;
+    		if(this.y < 7) this.y = 7;
+    		if(this.x > (this.canvasWidth-7)) this.x = (this.canvasWidth-7);
+    	};
+    	function Pad(canvas){
+    		this.length = canvas.width/8;
+    		this.x = canvas.width/2 - this.length/2;
+    		this.y = canvas.height-20;
+
+    		this.canvas = canvas;
+    		this.context = canvas.getContext('2d');
+    		this.canvasHeight = canvas.height;
+    		this.canvasWidth = canvas.width;
+    	};
+    	Pad.prototype.draw = function() {
+			this.context.fillStyle = '#FF0000';
+    		this.context.beginPath();
+			this.context.fillRect(this.x, this.y, this.length, 5);
+			this.context.fill();
+    	};
+    	Pad.prototype.updatePos = function(x) {
+    		this.x = x - this.length/2;
+    		if(this.x < 0) this.x = 0;
+    		if((this.x+this.length) > this.canvasWidth) this.x = this.canvasWidth - this.length;
+    	};
+    	Pad.prototype.getPos = function() {
+    		return { xLeft: this.x, xRight: (this.x+this.length), y: this.y }
+    	};
+
+        (function() {
+	        var can = document.getElementById('game');
+	        if(can.getContext){
+		       	var ball = new Ball(can);
+		       	var p1 = new Pad(can);
+
+	        	can.onmousemove = function(e){
+				    p1.updatePos(e.clientX - can.offsetLeft);
+				}
+		       	setInterval(function() {
+		       		can.getContext('2d').clearRect(0, 0, can.width, can.height);
+	       			ball.move(p1.getPos());
+	       			ball.draw();
+	       			p1.draw();
+		       	}, 17)
+	        }
+        })();
+    </script>
+</html>
