@@ -10,19 +10,21 @@ import (
 type Server struct {
 	pattern        string
 	WaitingClients *Queue
-	WaitingGames   []*Game
-	Games          []*Game
+	WaitingGames   *Games
+	Games          *Games
 	addCh          chan *Client
+	startCh        chan *Client
 	delCh          chan *Client
 	doneCh         chan bool
 	errCh          chan error
 }
 
 func NewServer(pattern string) *Server {
-	waitingClients := new(Queue)
-	waitingGames := []*Game{}
-	Games := []*Game{}
+	waitingClients := &Queue{make(map[int]*Client), 0}
+	waitingGames := &Games{make(map[int]*Game), 0}
+	Games := &Games{make(map[int]*Game), 0}
 	addCh := make(chan *Client)
+	startCh := make(chan *Client)
 	delCh := make(chan *Client)
 	doneCh := make(chan bool)
 	errCh := make(chan error)
@@ -33,6 +35,7 @@ func NewServer(pattern string) *Server {
 		waitingGames,
 		Games,
 		addCh,
+		startCh,
 		delCh,
 		doneCh,
 		errCh,
@@ -41,6 +44,10 @@ func NewServer(pattern string) *Server {
 
 func (s *Server) Add(c *Client) {
 	s.addCh <- c
+}
+
+func (s *Server) StartGame(c *Client) {
+	s.startCh <- c
 }
 
 func (s *Server) Del(c *Client) {
@@ -67,12 +74,13 @@ func (s *Server) Listen() {
 			}
 		}()
 
-		client := NewClient(ws, s)
+		client := NewClient(s.WaitingClients.GetNextId(), ws, s)
 		s.Add(client)
 	}
 	http.Handle(s.pattern, websocket.Handler(onConnected))
 	log.Println("Created handler")
 
+	var tempGame *Game
 	for {
 		select {
 
@@ -80,18 +88,30 @@ func (s *Server) Listen() {
 		case c := <-s.addCh:
 			log.Println("Added new client")
 			s.WaitingClients.Add(c)
-			log.Println("Now", len(*s.WaitingClients), "clients waiting.")
+			log.Println("Now", s.WaitingClients.Len(), "clients waiting.")
 
-			// del a client
-			/*case c := <-s.delCh:
-				log.Println("Delete client")
-				delete(s.clients, c.id)
+		case c := <-s.addCh:
+			log.Println("Starting new game")
+			if s.WaitingGames.Len() > 0 {
+				tempGame = s.WaitingGames.Shift()
+				tempGame.AddPlayer(c)
+				s.Games.AddGame(tempGame)
+			} else {
+				tempGame = NewGame()
+				tempGame.AddPlayer(c)
+				go tempGame.Start()
+				s.WaitingGames.AddGame(tempGame)
+			}
+		// del a client
+		case c := <-s.delCh:
+			log.Println("Delete client")
+			delete(s.WaitingClients.content, c.Id)
+			/*
+				case err := <-s.errCh:
+					log.Println("Error:", err.Error())
 
-			case err := <-s.errCh:
-				log.Println("Error:", err.Error())
-
-			case <-s.doneCh:
-				return
+				case <-s.doneCh:
+					return
 			*/
 		}
 	}
