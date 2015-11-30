@@ -14,6 +14,7 @@
             <canvas id="game" width="300" height="400" style="border-top: solid; border-left: solid; border-right: solid; border-width: 1px;">
 				This text is displayed if your browser does not support HTML5 Canvas. Try later browser.
             </canvas>
+            <div id="msgBox" style="float: left;"></div>
         </div>
     </body>
     <script type="text/javascript">
@@ -88,7 +89,7 @@
         (function() {
 	        var can = document.getElementById('game');
 	        if(can.getContext){
-		       	var ball = new Ball(can);
+		       	//var ball = new Ball(can);
 		       	var p1 = new Pad(can);
 
 	        	can.onmousemove = function(e){
@@ -96,11 +97,34 @@
 				}
 		       	setInterval(function() {
 		       		can.getContext('2d').clearRect(0, 0, can.width, can.height);
-	       			ball.move(p1.getPos());
-	       			ball.draw();
+	       			//ball.move(p1.getPos());
+	       			//ball.draw();
 	       			p1.draw();
 		       	}, 17)
 	        }
+
+            var sock = new WebSocket("ws://127.0.0.1:12345/handler");
+            sock.onopen = function(e){
+                addMsg("Onopen: " + e.data);
+                console.log(e.data);
+            }
+            sock.onclose = function(e){
+                addMsg("Onclose: " + e.data);
+                console.log(e.data);
+            }
+            sock.onmessage = function(e){
+                addMsg("Onmessage: " + e.data);
+                console.log(e.data);
+            }
+
         })();
+        function addMsg(msg){
+            var el = document.getElementById('msgBox'),
+                elChild = document.createElement('div');
+                elChild.innerHTML = msg;
+
+            // Prepend it
+            el.insertBefore(elChild, el.firstChild);
+        }
     </script>
 </html>

@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"golang.org/x/net/websocket"
+	//"golang.org/x/net/websocket"
 	"padpad/server"
 )
 

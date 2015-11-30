@@ -1,9 +1,15 @@
 package server
 
+import (
+	"golang.org/x/net/websocket"
+)
+
 type Client struct {
-	Points uint
+	Points     uint
+	WebService *websocket.Conn
+	Server     *Server
 }
 
-func NewClient() *Client {
-	return &Client{}
+func NewClient(ws *websocket.Conn, server *Server) *Client {
+	return &Client{0, ws, server}
 }
