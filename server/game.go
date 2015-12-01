@@ -1,7 +1,9 @@
 package server
 
 import (
-	"golang.org/x/net/websocket"
+	//"fmt"
+	//"golang.org/x/net/websocket"
+	"padpad/objects"
 	"time"
 )
 
@@ -28,22 +30,20 @@ func (g *Game) AddPlayer(c *Client) bool {
 }
 
 func (g *Game) Start() {
-	var x, y uint = 0, 0
+	var b *objects.Ball = objects.NewBall(100, 100)
 	for {
-		x += 1
-		y += 1
+		b.X += 1
+		b.Y += 1
 
-		ball := struct {
-			x uint
-			y uint
-		}{
-			x, y,
-		}
 		if g.Player1 != nil {
-			websocket.JSON.Send(g.Player1.WebService, &ball)
+			//fmt.Println("Wysyłam do gracza 1", *b)
+			g.Player1.ch <- b
+			//websocket.JSON.Send(g.Player1.WebService, *b)
 		}
 		if g.Player2 != nil {
-			websocket.JSON.Send(g.Player2.WebService, &ball)
+			//fmt.Println("Wysyłam do gracza 2", *b)
+			g.Player2.ch <- b
+			//websocket.JSON.Send(g.Player2.WebService, *b)
 		}
 
 		time.Sleep(time.Duration(time.Second / 60))

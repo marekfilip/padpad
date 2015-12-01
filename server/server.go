@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"golang.org/x/net/websocket"
+	"padpad/objects"
 )
 
 type Server struct {
@@ -76,6 +77,8 @@ func (s *Server) Listen() {
 
 		client := NewClient(s.WaitingClients.GetNextId(), ws, s)
 		s.Add(client)
+		client.Listen()
+		client.ch <- &objects.Ball{1, 1}
 	}
 	http.Handle(s.pattern, websocket.Handler(onConnected))
 	log.Println("Created handler")
