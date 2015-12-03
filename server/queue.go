@@ -1,8 +1,8 @@
 package server
 
 type Queue struct {
-	content map[int]*Client
-	nextId  int
+	content   map[int]*Client
+	currentId int
 }
 
 func NewQueue() *Queue {
@@ -13,15 +13,18 @@ func NewQueue() *Queue {
 }
 
 func (q *Queue) Add(c *Client) {
-	q.content[q.nextId] = c
-	q.nextId += 1
+	q.content[c.Id] = c
 }
 
 func (q *Queue) Len() int {
 	return len((*q).content)
 }
 
-func (q *Queue) GetNextId() int {
-	q.nextId += 1
-	return (q.nextId - 1)
+func (q *Queue) AssignId() int {
+	q.currentId++
+	return q.currentId - 1
+}
+
+func (q *Queue) Remove(c *Client) {
+	delete(q.content, c.Id)
 }

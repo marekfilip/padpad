@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"golang.org/x/net/websocket"
-	"padpad/objects"
 )
 
 type Server struct {
@@ -75,10 +74,9 @@ func (s *Server) Listen() {
 			}
 		}()
 
-		client := NewClient(s.WaitingClients.GetNextId(), ws, s)
+		client := NewClient(s.WaitingClients.AssignId(), ws, s)
 		s.Add(client)
 		client.Listen()
-		client.ch <- &objects.Ball{1, 1}
 	}
 	http.Handle(s.pattern, websocket.Handler(onConnected))
 	log.Println("Created handler")
@@ -92,8 +90,7 @@ func (s *Server) Listen() {
 			log.Println("Added new client")
 			s.WaitingClients.Add(c)
 			log.Println("Now", s.WaitingClients.Len(), "clients waiting.")
-
-		case c := <-s.addCh:
+		case c := <-s.startCh:
 			log.Println("Starting new game")
 			if s.WaitingGames.Len() > 0 {
 				tempGame = s.WaitingGames.Shift()
@@ -108,7 +105,8 @@ func (s *Server) Listen() {
 		// del a client
 		case c := <-s.delCh:
 			log.Println("Delete client")
-			delete(s.WaitingClients.content, c.Id)
+			s.WaitingClients.Remove(c)
+			log.Println("Now", s.WaitingClients.Len(), "clients waiting.")
 			/*
 				case err := <-s.errCh:
 					log.Println("Error:", err.Error())

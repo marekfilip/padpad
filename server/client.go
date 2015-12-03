@@ -1,10 +1,11 @@
 package server
 
 import (
+	"fmt"
 	"golang.org/x/net/websocket"
-	//"io"
+	"io"
 	"log"
-	"padpad/objects"
+	"padpad/server/objects"
 )
 
 const channelBufSize = 100
@@ -29,7 +30,11 @@ func (c *Client) Done() {
 // Listen Write and Read request via chanel
 func (c *Client) Listen() {
 	go c.listenWrite()
-	//c.listenRead()
+	c.listenRead()
+}
+
+func (c *Client) StartGame() {
+	c.Server.StartGame(c)
 }
 
 // Listen write request via chanel
@@ -41,8 +46,7 @@ func (c *Client) listenWrite() {
 		// send message to the client
 		case msg := <-c.ch:
 			log.Println("Send:", *msg)
-			websocket.JSON.Send(c.WebService, *msg)
-
+			websocket.JSON.Send(c.WebService, msg.Encode())
 		// receive done request
 		case <-c.doneCh:
 			c.Server.Del(c)
@@ -53,8 +57,10 @@ func (c *Client) listenWrite() {
 }
 
 // Listen read request via chanel
-/*func (c *Client) listenRead() {
+func (c *Client) listenRead() {
 	log.Println("Listening read from client")
+
+	c.StartGame()
 	for {
 		select {
 
@@ -66,16 +72,17 @@ func (c *Client) listenWrite() {
 
 		// read data from websocket connection
 		default:
-			var msg objects.Ball
+			var msg Message
 			err := websocket.JSON.Receive(c.WebService, &msg)
+			fmt.Println("Recived message:", msg)
 			if err == io.EOF {
 				c.doneCh <- true
 			} else if err != nil {
 				c.Server.Err(err)
-			} else {
+			} /*else {
 				c.Server.SendAll(&msg)
-			}
+			}*/
+			fmt.Println("Default sie odpalil")
 		}
 	}
 }
-*/
