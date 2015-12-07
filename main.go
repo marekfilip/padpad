@@ -6,7 +6,6 @@ import (
 	"padpad/server"
 )
 
-// This example demonstrates a trivial echo server.
 func main() {
 	server := server.NewServer("/handler")
 	go server.Listen()

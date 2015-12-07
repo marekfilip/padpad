@@ -15,6 +15,7 @@ type Client struct {
 	Points     uint
 	WebService *websocket.Conn
 	Server     *Server
+	Game       *Game
 	doneCh     chan bool
 	ch         chan *objects.Ball
 }
@@ -60,7 +61,6 @@ func (c *Client) listenWrite() {
 func (c *Client) listenRead() {
 	log.Println("Listening read from client")
 
-	c.StartGame()
 	for {
 		select {
 

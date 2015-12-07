@@ -1,5 +1,6 @@
 .main {
 	text-align: center;
+	float: left;
 }
 
 #game {
@@ -7,7 +8,4 @@
 	border-left: solid;
 	border-right: solid;
 	border-width: 1px;
-}
-#msgBox {
-	float: left;
 }

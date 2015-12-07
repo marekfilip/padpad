@@ -1,8 +1,14 @@
+var sock = null,
+    button = null,
+    can = null,
+    ball = null,
+    p1 = null;
 (function() {
-    var sock = new WebSocket("ws://127.0.0.1:12345/handler"),
-        can = document.getElementById('game'),
-        ball = new Ball(can),
-        p1 = new Pad(can);
+    sock = new WebSocket("ws://127.0.0.1:12345/handler");
+    button = document.getElementById('msgBox');
+    can = document.getElementById('game');
+
+    button.setAttribute('style', 'display: block');
     sock.onopen = function(e) {
         addMsg("Onopen: " + e.data);
         console.log(e.data);
@@ -23,12 +29,16 @@
     }
     if (can.getContext) {
         setInterval(function() {
-            can.getContext('2d').clearRect(0, 0, can.width, can.height);
-            ball.draw();
-            p1.draw();
+            if (p1 !== null && ball !== null) {
+                can.getContext('2d').clearRect(0, 0, can.width, can.height);
+                ball.draw();
+                p1.draw();
+            }
         }, 17)
         can.onmousemove = function(e) {
-            p1.updatePos(e.clientX - can.offsetLeft);
+            if (p1 !== null) {
+                p1.updatePos(e.clientX - can.offsetLeft);
+            }
         }
     }
 })();
@@ -39,4 +49,21 @@ function addMsg(msg) {
     elChild.innerHTML = msg;
     // Prepend it
     el.insertBefore(elChild, el.firstChild);
+}
+
+function startGame() {
+    if (button !== null) {
+        ball = new Ball(can);
+        p1 = new Pad(can);
+        can = document.getElementById('game');
+        button.setAttribute('style', 'display: none');
+
+        sock.send(JSON.parse({
+            't': 0,
+            'd': {
+                'cW': can.height,
+                'cH': can.width
+            }
+        }));
+    }
 }
