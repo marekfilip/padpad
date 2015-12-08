@@ -1,4 +1,5 @@
-function Pad(canvas) {
+function Pad(canvas, sock) {
+    this.sock = sock;
     this.length = canvas.width / 8;
     this.x = canvas.width / 2 - this.length / 2;
     this.y = canvas.height - 20;
@@ -16,6 +17,12 @@ function Pad(canvas) {
         this.x = x - this.length / 2;
         if (this.x < 0) this.x = 0;
         if ((this.x + this.length) > this.canvasWidth) this.x = this.canvasWidth - this.length;
+        this.sock.send(JSON.stringify({
+            't': 1,
+            'd': {
+                'pX': this.x
+            }
+        }));
     };
     this.getPos = function() {
         return {

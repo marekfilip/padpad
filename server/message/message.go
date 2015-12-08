@@ -7,6 +7,6 @@ const (
 )
 
 type Message struct {
-	MessageType int                    `json:"t"`
-	Data        map[string]interface{} `json:"d"`
+	MessageType int                `json:"t"`
+	Data        map[string]float32 `json:"d"`
 }

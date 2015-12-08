@@ -14,17 +14,29 @@ const channelBufSize = 100
 type Client struct {
 	Id           int
 	Points       uint
-	CanvasHeight uint
-	CanvasWidth  uint
+	CanvasHeight int
+	CanvasWidth  int
 	WebService   *websocket.Conn
 	Server       *Server
 	Game         *Game
+	Pad          *objects.Pad
 	doneCh       chan bool
 	ch           chan *objects.Ball
 }
 
 func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
-	return &Client{id, 0, ws, server, nil, make(chan bool), make(chan *objects.Ball, channelBufSize)}
+	return &Client{
+		id,
+		0,
+		0,
+		0,
+		ws,
+		server,
+		nil,
+		objects.NewPad(0, 0),
+		make(chan bool),
+		make(chan *objects.Ball, channelBufSize),
+	}
 }
 
 func (c *Client) Done() {
@@ -49,8 +61,8 @@ func (c *Client) listenWrite() {
 
 		// send message to the client
 		case msg := <-c.ch:
-			log.Println("Send:", *msg)
-			websocket.JSON.Send(c.WebService, msg)
+			//log.Println("Send:", *msg)
+			websocket.JSON.Send(c.WebService, msg.Encode())
 		// receive done request
 		case <-c.doneCh:
 			c.Server.Del(c)
@@ -77,7 +89,6 @@ func (c *Client) listenRead() {
 		default:
 			var msg message.Message
 			err := websocket.JSON.Receive(c.WebService, &msg)
-			fmt.Println("Recived message:", msg)
 			c.Decode(&msg)
 			if err == io.EOF {
 				c.doneCh <- true
@@ -94,9 +105,18 @@ func (c *Client) listenRead() {
 
 func (c *Client) Decode(msg *message.Message) {
 	switch {
-	case msg.MessageType == message.START_GAME_TYPE:
+	case msg.MessageType == message.STARTGAME_TYPE:
+		fmt.Println("Recived startgame:", *msg)
+		c.CanvasHeight = int(msg.Data["cH"])
+		c.CanvasHeight = int(msg.Data["cW"])
+		c.Pad.UpdatePadLength(msg.Data["cW"] / 8)
+		c.StartGame()
 		break
 	case msg.MessageType == message.PAD_POSITION_TYPE:
+		fmt.Println("Recived podposition:", *msg)
+		c.Pad.UpdatePadPos(msg.Data["pX"])
 		break
+	default:
+		fmt.Println("Unrecognized msg:", *msg)
 	}
 }

@@ -8,10 +8,12 @@ import (
 type Game struct {
 	Player1 *Client
 	Player2 *Client
+	Height  int
+	Width   int
 }
 
 func NewGame() *Game {
-	return &Game{nil, nil}
+	return &Game{nil, nil, 400, 300}
 }
 
 func (g *Game) AddPlayer(c *Client) bool {
@@ -28,7 +30,7 @@ func (g *Game) AddPlayer(c *Client) bool {
 }
 
 func (g *Game) Start() {
-	var b *objects.Ball = objects.NewBall(0, 0)
+	var b *objects.Ball = objects.NewBall(0, 0, 400, 300)
 	for {
 		b.Update()
 		if g.Player1 != nil {
@@ -39,7 +41,7 @@ func (g *Game) Start() {
 		}
 
 		if g.Player1 == nil && g.Player1 == nil {
-
+			// Zniszcz tą grę
 		}
 		time.Sleep(time.Duration(time.Second / 60))
 	}

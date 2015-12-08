@@ -19,14 +19,14 @@ var sock = null,
         console.log(e.data);
     }
     sock.onmessage = function(e) {
-        addMsg("Onmessage: " + e.data);
+        //addMsg("Onmessage: " + e.data);
         var json = JSON.parse(e.data)
         switch (json.t) {
             case 2:
                 ball.updatePosition(json.d.x, json.d.x);
                 break;
         }
-        console.log(json);
+        //console.log(json);
     }
     if (can.getContext) {
         setInterval(function() {
@@ -54,7 +54,7 @@ function addMsg(msg) {
 function startGame() {
     if (button !== null) {
         ball = new Ball(can);
-        p1 = new Pad(can);
+        p1 = new Pad(can, sock);
         button.setAttribute('style', 'display: none');
 
         sock.send(JSON.stringify({
