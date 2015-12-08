@@ -5,23 +5,26 @@ import (
 	"golang.org/x/net/websocket"
 	"io"
 	"log"
+	"padpad/server/message"
 	"padpad/server/objects"
 )
 
 const channelBufSize = 100
 
 type Client struct {
-	Id         int
-	Points     uint
-	WebService *websocket.Conn
-	Server     *Server
-	Game       *Game
-	doneCh     chan bool
-	ch         chan *objects.Ball
+	Id           int
+	Points       uint
+	CanvasHeight uint
+	CanvasWidth  uint
+	WebService   *websocket.Conn
+	Server       *Server
+	Game         *Game
+	doneCh       chan bool
+	ch           chan *objects.Ball
 }
 
 func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
-	return &Client{id, 0, ws, server, make(chan bool), make(chan *objects.Ball, channelBufSize)}
+	return &Client{id, 0, ws, server, nil, make(chan bool), make(chan *objects.Ball, channelBufSize)}
 }
 
 func (c *Client) Done() {
@@ -47,7 +50,7 @@ func (c *Client) listenWrite() {
 		// send message to the client
 		case msg := <-c.ch:
 			log.Println("Send:", *msg)
-			websocket.JSON.Send(c.WebService, msg.Encode())
+			websocket.JSON.Send(c.WebService, msg)
 		// receive done request
 		case <-c.doneCh:
 			c.Server.Del(c)
@@ -72,17 +75,28 @@ func (c *Client) listenRead() {
 
 		// read data from websocket connection
 		default:
-			var msg Message
+			var msg message.Message
 			err := websocket.JSON.Receive(c.WebService, &msg)
 			fmt.Println("Recived message:", msg)
+			c.Decode(&msg)
 			if err == io.EOF {
 				c.doneCh <- true
 			} else if err != nil {
 				c.Server.Err(err)
-			} /*else {
-				c.Server.SendAll(&msg)
-			}*/
-			fmt.Println("Default sie odpalil")
+			}
 		}
+	}
+}
+
+/*
+	Dokończyć metodę dekodującą dane przychodzące
+*/
+
+func (c *Client) Decode(msg *message.Message) {
+	switch {
+	case msg.MessageType == message.START_GAME_TYPE:
+		break
+	case msg.MessageType == message.PAD_POSITION_TYPE:
+		break
 	}
 }

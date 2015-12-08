@@ -1,13 +1,10 @@
 package objects
 
+import "padpad/server/message"
+
 type Ball struct {
 	X uint
 	Y uint
-}
-
-type EncodedBall struct {
-	MessageType int                    `json:"t"`
-	Data        map[string]interface{} `json:"d"`
 }
 
 func NewBall(startx, starty uint) *Ball {
@@ -22,9 +19,9 @@ func (b *Ball) Update() {
 	b.Y++
 }
 
-func (b *Ball) Encode() *EncodedBall {
-	return &EncodedBall{
-		2,
+func (b *Ball) Encode() *message.Message {
+	return &message.Message{
+		message.BALL_POSITION_TYPE,
 		map[string]interface{}{
 			"x": b.X,
 			"y": b.Y,

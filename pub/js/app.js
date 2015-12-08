@@ -3,9 +3,10 @@ var sock = null,
     can = null,
     ball = null,
     p1 = null;
+
 (function() {
     sock = new WebSocket("ws://127.0.0.1:12345/handler");
-    button = document.getElementById('msgBox');
+    button = document.getElementById('start-game');
     can = document.getElementById('game');
 
     button.setAttribute('style', 'display: block');
@@ -47,7 +48,6 @@ function addMsg(msg) {
     var el = document.getElementById('msgBox'),
         elChild = document.createElement('div');
     elChild.innerHTML = msg;
-    // Prepend it
     el.insertBefore(elChild, el.firstChild);
 }
 
@@ -55,10 +55,9 @@ function startGame() {
     if (button !== null) {
         ball = new Ball(can);
         p1 = new Pad(can);
-        can = document.getElementById('game');
         button.setAttribute('style', 'display: none');
 
-        sock.send(JSON.parse({
+        sock.send(JSON.stringify({
             't': 0,
             'd': {
                 'cW': can.height,
