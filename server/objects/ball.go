@@ -1,15 +1,10 @@
 package objects
 
 import "padpad/server/message"
-import "fmt"
-
-type direction int
 
 const (
-	UP    direction = -1
-	DOWN  direction = 1
-	LEFT  direction = -1
-	RIGHT direction = 1
+	UP, LEFT    int = -1, -1
+	DOWN, RIGHT int = 1, 1
 )
 
 type Ball struct {
@@ -17,10 +12,10 @@ type Ball struct {
 	Y            float32
 	CanvasHeight int
 	CanvasWidth  int
-	DirX         direction
-	DirY         direction
-	AngleX       int
-	AngleY       int
+	DirX         int
+	DirY         int
+	AngleX       float32
+	AngleY       float32
 	Speed        float32
 }
 
@@ -30,8 +25,8 @@ func NewBall(startx, starty float32, h, w int) *Ball {
 		starty,
 		h,
 		w,
-		1,
-		1,
+		DOWN,
+		RIGHT,
 		1,
 		1,
 		1,
@@ -52,7 +47,6 @@ func (b *Ball) Update() {
 		b.Speed += 0.05
 	}
 	if b.Y >= float32(b.CanvasHeight-7) {
-		fmt.Println("Lecę do góry", b.Y, ">=", float32(b.CanvasHeight-7), "(", b.CanvasHeight, "-7 )")
 		b.DirY = UP
 		b.Speed += 0.05
 	}
@@ -61,9 +55,8 @@ func (b *Ball) Update() {
 		b.Speed += 0.05
 	}
 
-	b.X = b.X + float32(b.AngleX*int(b.DirX))*b.Speed
-	b.Y = b.Y + float32(b.AngleY*int(b.DirY))*b.Speed
-
+	b.X = b.X + float32(b.AngleX*float32(b.DirX))*b.Speed
+	b.Y = b.Y + float32(b.AngleY*float32(b.DirY))*b.Speed
 	if b.X < 7 {
 		b.X = 7
 	}

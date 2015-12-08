@@ -23,10 +23,10 @@ var sock = null,
         var json = JSON.parse(e.data)
         switch (json.t) {
             case 2:
-                ball.updatePosition(json.d.x, json.d.x);
+                ball.updatePosition(json.d.x, json.d.y);
                 break;
         }
-        //console.log(json);
+        console.log(json);
     }
     if (can.getContext) {
         setInterval(function() {
