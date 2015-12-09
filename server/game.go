@@ -38,9 +38,15 @@ func (g *Game) Start() {
 		b.Update()
 		if g.Player1 != nil {
 			g.Player1.ch <- b
+			if g.Player2 != nil {
+				g.Player1.opponentPad <- g.Player2.Pad
+			}
 		}
 		if g.Player2 != nil {
 			g.Player2.ch <- b
+			if g.Player1 != nil {
+				g.Player2.opponentPad <- g.Player1.Pad
+			}
 		}
 
 		if g.Player1 == nil || g.Player2 == nil {

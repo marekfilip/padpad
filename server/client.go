@@ -22,6 +22,7 @@ type Client struct {
 	Pad          *objects.Pad
 	doneCh       chan bool
 	ch           chan *objects.Ball
+	opponentPad  chan *objects.Pad
 }
 
 func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
@@ -33,9 +34,10 @@ func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
 		ws,
 		server,
 		nil,
-		objects.NewPad(0, 0),
+		objects.NewPad(100, 100),
 		make(chan bool),
 		make(chan *objects.Ball, channelBufSize),
+		make(chan *objects.Pad, channelBufSize),
 	}
 }
 
@@ -58,11 +60,12 @@ func (c *Client) listenWrite() {
 	log.Println("Listening write to client")
 	for {
 		select {
-
-		// send message to the client
-		case msg := <-c.ch:
-			//log.Println("Send:", *msg)
+		case msg := <-c.opponentPad:
 			websocket.JSON.Send(c.WebService, msg.Encode())
+		// send message to the client
+		//case msg := <-c.ch:
+		case <-c.ch:
+			//websocket.JSON.Send(c.WebService, msg.Encode())
 		// receive done request
 		case <-c.doneCh:
 			if c.Game != nil {
@@ -122,7 +125,7 @@ func (c *Client) Decode(msg *message.Message) {
 		break
 	case msg.MessageType == message.PAD_POSITION_TYPE:
 		fmt.Println(c.Id, "received podposition:", *msg)
-		c.Pad.UpdatePadPos(msg.Data["pX"])
+		c.Pad.UpdatePadPos(msg.Data["pX"], c.Pad.Y)
 		break
 	default:
 		fmt.Println("Unrecognized msg:", *msg)

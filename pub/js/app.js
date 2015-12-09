@@ -2,7 +2,8 @@ var sock = null,
     button = null,
     can = null,
     ball = null,
-    p1 = null;
+    player = null,
+    opponent = null;
 
 (function() {
     sock = new WebSocket("ws://127.0.0.1:12345/handler");
@@ -11,34 +12,51 @@ var sock = null,
 
     button.setAttribute('style', 'display: block');
     sock.onopen = function(e) {
-        addMsg("Onopen: " + e.data);
-        console.log(e.data);
+        addMsg("Połączono");
     }
     sock.onclose = function(e) {
-        addMsg("Onclose: " + e.data);
-        console.log(e.data);
+        addMsg("Rozłączono");
     }
     sock.onmessage = function(e) {
-        //addMsg("Onmessage: " + e.data);
         var json = JSON.parse(e.data)
+        //console.log(json)
         switch (json.t) {
             case 3:
-                ball.updatePosition(json.d.x, json.d.y);
+                if(ball === null){
+                    ball = new Ball(can, json.d.x, json.d.y)
+                } else {
+                    ball.updatePosition(json.d.x, json.d.y);
+                }
                 break;
+            case 4:
+                console.log(json)
+                if(player === null){
+                    player = new Pad(can, sock, json.d.x, json.d.y);
+                } else {
+                    player.updatePos(json.d.x);
+                }
+                break;
+            case 5:
+                console.log(json)
+                if(opponent === null){
+                    opponent = new Pad(can, null, json.d.x, json.d.y);
+                } else {
+                    opponent.updatePos(json.d.x);
+                }
         }
-        console.log(json);
     }
     if (can.getContext) {
         setInterval(function() {
-            if (p1 !== null && ball !== null) {
+            if (player !== null && ball !== null && opponent !== null) {
                 can.getContext('2d').clearRect(0, 0, can.width, can.height);
                 ball.draw();
-                p1.draw();
+                player.draw();
+                opponent.draw();
             }
         }, 17)
         can.onmousemove = function(e) {
-            if (p1 !== null) {
-                p1.updatePos(e.clientX - can.offsetLeft);
+            if (player !== null) {
+                player.updatePos(e.clientX - can.offsetLeft);
             }
         }
     }
@@ -53,8 +71,6 @@ function addMsg(msg) {
 
 function startGame() {
     if (button !== null) {
-        ball = new Ball(can);
-        p1 = new Pad(can, sock);
         button.setAttribute('style', 'display: none');
 
         sock.send(JSON.stringify({
