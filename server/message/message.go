@@ -1,9 +1,9 @@
 package message
 
 const (
-	STARTGAME_TYPE     int = 0
-	PAD_POSITION_TYPE  int = 1
-	BALL_POSITION_TYPE int = 2
+	STARTGAME_TYPE     int = 1
+	PAD_POSITION_TYPE  int = 2
+	BALL_POSITION_TYPE int = 3
 )
 
 type Message struct {

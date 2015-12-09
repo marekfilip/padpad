@@ -6,14 +6,16 @@ import (
 )
 
 type Game struct {
+	Id      int
+	Queue   *Games
 	Player1 *Client
 	Player2 *Client
 	Height  int
 	Width   int
 }
 
-func NewGame() *Game {
-	return &Game{nil, nil, 400, 300}
+func NewGame(q *Games) *Game {
+	return &Game{0, q, nil, nil, 400, 300}
 }
 
 func (g *Game) AddPlayer(c *Client) bool {
@@ -31,6 +33,7 @@ func (g *Game) AddPlayer(c *Client) bool {
 
 func (g *Game) Start() {
 	var b *objects.Ball = objects.NewBall(0, 0, 400, 300)
+
 	for {
 		b.Update()
 		if g.Player1 != nil {
@@ -40,11 +43,17 @@ func (g *Game) Start() {
 			g.Player2.ch <- b
 		}
 
-		if g.Player1 == nil && g.Player1 == nil {
-			// Zniszcz tą grę
+		if g.Player1 == nil || g.Player2 == nil {
+			return
 		}
 		time.Sleep(time.Duration(time.Second / 60))
 	}
+}
+func (g *Game) BothPlayersPresent() bool {
+	if g.Player1 != nil && g.Player2 != nil {
+		return true
+	}
+	return false
 }
 
 type Games struct {
@@ -53,6 +62,7 @@ type Games struct {
 }
 
 func (games *Games) AddGame(g *Game) {
+	g.Id = games.currentId
 	games.content[games.currentId] = g
 	games.currentId += 1
 }
@@ -70,11 +80,18 @@ func (g *Games) Shift() *Game {
 	if len((*g).content) == 0 {
 		return nil
 	}
+
 	var x *Game
 	for key, _ := range g.content {
 		x = (*g).content[key]
-		(*g).content[key] = nil
+		if x.Player1 == nil || x.Player2 == nil {
+			return x
+		}
 	}
 
-	return x
+	return nil
+}
+
+func (g *Games) Remove(game *Game) {
+	delete(g.content, game.Id)
 }

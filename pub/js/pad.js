@@ -18,7 +18,7 @@ function Pad(canvas, sock) {
         if (this.x < 0) this.x = 0;
         if ((this.x + this.length) > this.canvasWidth) this.x = this.canvasWidth - this.length;
         this.sock.send(JSON.stringify({
-            't': 1,
+            't': 2,
             'd': {
                 'pX': this.x
             }

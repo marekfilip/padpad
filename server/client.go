@@ -14,8 +14,8 @@ const channelBufSize = 100
 type Client struct {
 	Id           int
 	Points       uint
-	CanvasHeight int
-	CanvasWidth  int
+	CanvasHeight float32
+	CanvasWidth  float32
 	WebService   *websocket.Conn
 	Server       *Server
 	Game         *Game
@@ -65,7 +65,12 @@ func (c *Client) listenWrite() {
 			websocket.JSON.Send(c.WebService, msg.Encode())
 		// receive done request
 		case <-c.doneCh:
-			c.Server.Del(c)
+			if c.Game != nil {
+				c.Game.Player1 = nil
+				c.Game.Player2 = nil
+				c.Server.delGameChan <- c.Game
+			}
+			c.Server.DelClient(c)
 			c.doneCh <- true // for listenRead method
 			return
 		}
@@ -81,7 +86,7 @@ func (c *Client) listenRead() {
 
 		// receive done request
 		case <-c.doneCh:
-			c.Server.Del(c)
+			c.Server.DelClient(c)
 			c.doneCh <- true // for listenWrite method
 			return
 
@@ -106,14 +111,17 @@ func (c *Client) listenRead() {
 func (c *Client) Decode(msg *message.Message) {
 	switch {
 	case msg.MessageType == message.STARTGAME_TYPE:
-		fmt.Println("Recived startgame:", *msg)
-		c.CanvasHeight = int(msg.Data["cH"])
-		c.CanvasHeight = int(msg.Data["cW"])
-		c.Pad.UpdatePadLength(msg.Data["cW"] / 8)
+		fmt.Println(c.Id, "received startgame:", *msg)
+		/*
+			Rozmiary planszy gracza nie mają w tej chwili znaczenia
+		*/
+		c.CanvasHeight = msg.Data["cH"]
+		c.CanvasWidth = msg.Data["cW"]
+		c.Pad.UpdatePadLength(c.CanvasWidth / 8)
 		c.StartGame()
 		break
 	case msg.MessageType == message.PAD_POSITION_TYPE:
-		fmt.Println("Recived podposition:", *msg)
+		fmt.Println(c.Id, "received podposition:", *msg)
 		c.Pad.UpdatePadPos(msg.Data["pX"])
 		break
 	default:

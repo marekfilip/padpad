@@ -22,7 +22,7 @@ var sock = null,
         //addMsg("Onmessage: " + e.data);
         var json = JSON.parse(e.data)
         switch (json.t) {
-            case 2:
+            case 3:
                 ball.updatePosition(json.d.x, json.d.y);
                 break;
         }
@@ -58,7 +58,7 @@ function startGame() {
         button.setAttribute('style', 'display: none');
 
         sock.send(JSON.stringify({
-            't': 0,
+            't': 1,
             'd': {
                 'cW': can.height,
                 'cH': can.width
