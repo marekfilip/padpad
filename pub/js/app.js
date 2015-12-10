@@ -19,7 +19,6 @@ var sock = null,
     }
     sock.onmessage = function(e) {
         var json = JSON.parse(e.data)
-        //console.log(json)
         switch (json.t) {
             case 3:
                 if(ball === null){
@@ -29,7 +28,6 @@ var sock = null,
                 }
                 break;
             case 4:
-                console.log(json)
                 if(player === null){
                     player = new Pad(can, sock, json.d.x, json.d.y);
                 } else {
@@ -37,7 +35,6 @@ var sock = null,
                 }
                 break;
             case 5:
-                console.log(json)
                 if(opponent === null){
                     opponent = new Pad(can, null, json.d.x, json.d.y);
                 } else {

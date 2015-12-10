@@ -61,11 +61,10 @@ func (c *Client) listenWrite() {
 	for {
 		select {
 		case msg := <-c.opponentPad:
-			websocket.JSON.Send(c.WebService, msg.Encode())
+			websocket.JSON.Send(c.WebService, msg.Encode(message.OPPONENT_PAD_POSITION_TYPE))
 		// send message to the client
-		//case msg := <-c.ch:
-		case <-c.ch:
-			//websocket.JSON.Send(c.WebService, msg.Encode())
+		case msg := <-c.ch:
+			websocket.JSON.Send(c.WebService, msg.Encode())
 		// receive done request
 		case <-c.doneCh:
 			if c.Game != nil {
@@ -121,6 +120,7 @@ func (c *Client) Decode(msg *message.Message) {
 		c.CanvasHeight = msg.Data["cH"]
 		c.CanvasWidth = msg.Data["cW"]
 		c.Pad.UpdatePadLength(c.CanvasWidth / 8)
+		websocket.JSON.Send(c.WebService, c.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE))
 		c.StartGame()
 		break
 	case msg.MessageType == message.PAD_POSITION_TYPE:

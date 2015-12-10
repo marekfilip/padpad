@@ -21,9 +21,9 @@ func (p *Pad) UpdatePadLength(l float32) {
 	p.Length = l
 }
 
-func (p *Pad) Encode() *message.Message {
+func (p *Pad) Encode(msgType int) *message.Message {
 	return &message.Message{
-		message.OPPONENT_PAD_POSITION_TYPE,
+		msgType,
 		map[string]float32{
 			"x": p.X,
 			"y": p.Y,
