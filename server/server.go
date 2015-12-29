@@ -108,9 +108,9 @@ func (s *Server) Listen() {
 			}
 			c.Game = tempGame
 			c.Game.AddPlayer(c)
-			if c.Game.BothPlayersPresent() {
-				go c.Game.Start()
-			}
+			//if c.Game.BothPlayersPresent() {
+			go c.Game.Start()
+			//}
 			log.Println("Starting new game. Now", s.Games.Len(), "games online.")
 		case err := <-s.errCh:
 			log.Println("Error:", err.Error())

@@ -1,6 +1,7 @@
 package objects
 
 import "padpad/server/message"
+import "fmt"
 
 type Pad struct {
 	X      float32
@@ -13,6 +14,7 @@ func NewPad(x, y float32) *Pad {
 }
 
 func (p *Pad) UpdatePadPos(x, y float32) {
+	fmt.Println("Updating pad position X:", p.X, "Y:", p.Y)
 	p.X = x
 	p.Y = y
 }

@@ -28,27 +28,29 @@ var sock = null,
                 }
                 break;
             case 4:
+                console.log('Player: X: ' + json.d.x +  ' Y: ' + json.d.y);
                 if(player === null){
                     player = new Pad(can, sock, json.d.x, json.d.y);
                 } else {
-                    player.updatePos(json.d.x);
+                    player.setPos(json.d.x, json.d.y);
                 }
                 break;
             case 5:
+                //console.log('Opponent: X: ' + json.d.x +  ' Y: ' + json.d.y);
                 if(opponent === null){
                     opponent = new Pad(can, null, json.d.x, json.d.y);
                 } else {
-                    opponent.updatePos(json.d.x);
+                    opponent.setPos(json.d.x);
                 }
         }
     }
     if (can.getContext) {
         setInterval(function() {
-            if (player !== null && ball !== null && opponent !== null) {
+            if (player !== null && ball !== null /*&& opponent !== null*/) {
                 can.getContext('2d').clearRect(0, 0, can.width, can.height);
                 ball.draw();
                 player.draw();
-                opponent.draw();
+                //opponent.draw();
             }
         }, 17)
         can.onmousemove = function(e) {
@@ -73,8 +75,8 @@ function startGame() {
         sock.send(JSON.stringify({
             't': 1,
             'd': {
-                'cW': can.height,
-                'cH': can.width
+                'cW': can.width,
+                'cH': can.height
             }
         }));
     }

@@ -22,6 +22,7 @@ type Client struct {
 	Pad          *objects.Pad
 	doneCh       chan bool
 	ch           chan *objects.Ball
+	playerPad    chan *objects.Pad
 	opponentPad  chan *objects.Pad
 }
 
@@ -34,9 +35,10 @@ func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
 		ws,
 		server,
 		nil,
-		objects.NewPad(100, 100),
+		objects.NewPad(0, 0),
 		make(chan bool),
 		make(chan *objects.Ball, channelBufSize),
+		make(chan *objects.Pad, channelBufSize),
 		make(chan *objects.Pad, channelBufSize),
 	}
 }
@@ -51,8 +53,9 @@ func (c *Client) Listen() {
 	c.listenRead()
 }
 
-func (c *Client) StartGame() {
+func (c *Client) StartGame() bool {
 	c.Server.StartGame(c)
+	return true
 }
 
 // Listen write request via chanel
@@ -60,9 +63,13 @@ func (c *Client) listenWrite() {
 	log.Println("Listening write to client")
 	for {
 		select {
+		// send opponent pad position
 		case msg := <-c.opponentPad:
 			websocket.JSON.Send(c.WebService, msg.Encode(message.OPPONENT_PAD_POSITION_TYPE))
-		// send message to the client
+		// clients pad position
+		case msg := <-c.playerPad:
+			websocket.JSON.Send(c.WebService, msg.Encode(message.PLAYER_PAD_POSITION_TYPE))
+		// send ball position to client
 		case msg := <-c.ch:
 			websocket.JSON.Send(c.WebService, msg.Encode())
 		// receive done request
@@ -120,12 +127,24 @@ func (c *Client) Decode(msg *message.Message) {
 		c.CanvasHeight = msg.Data["cH"]
 		c.CanvasWidth = msg.Data["cW"]
 		c.Pad.UpdatePadLength(c.CanvasWidth / 8)
-		websocket.JSON.Send(c.WebService, c.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE))
 		c.StartGame()
+		fmt.Println("Player:", c.Pad)
+		websocket.JSON.Send(c.WebService, c.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE))
 		break
 	case msg.MessageType == message.PAD_POSITION_TYPE:
-		fmt.Println(c.Id, "received podposition:", *msg)
-		c.Pad.UpdatePadPos(msg.Data["pX"], c.Pad.Y)
+		var x float32 = msg.Data["pX"]
+		//fmt.Println(c.Id, "received podposition:", *msg)
+
+		if x < 0 {
+			x = 0
+		}
+
+		if (x + c.Pad.Length) > c.CanvasWidth {
+			x = c.CanvasWidth - c.Pad.Length
+		}
+
+		c.Pad.UpdatePadPos(x, c.Pad.Y)
+		c.playerPad <- c.Pad
 		break
 	default:
 		fmt.Println("Unrecognized msg:", *msg)

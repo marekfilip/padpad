@@ -21,10 +21,12 @@ func NewGame(q *Games) *Game {
 func (g *Game) AddPlayer(c *Client) bool {
 	if g.Player1 == nil {
 		g.Player1 = c
+		c.Pad.UpdatePadPos(float32(g.Player1.CanvasWidth/2-g.Player1.Pad.Length/2), float32(15))
 		return true
 	}
 	if g.Player2 == nil {
 		g.Player2 = c
+		c.Pad.UpdatePadPos(float32(g.Player2.CanvasWidth/2-g.Player2.Pad.Length/2), float32(g.Player2.CanvasHeight-15))
 		return true
 	}
 
@@ -32,7 +34,7 @@ func (g *Game) AddPlayer(c *Client) bool {
 }
 
 func (g *Game) Start() {
-	var b *objects.Ball = objects.NewBall(0, 0, 400, 300)
+	var b *objects.Ball = objects.NewBall(0, 0, g.Height, g.Width)
 
 	for {
 		b.Update()
@@ -49,9 +51,9 @@ func (g *Game) Start() {
 			}
 		}
 
-		if g.Player1 == nil || g.Player2 == nil {
+		/*if g.Player1 == nil || g.Player2 == nil {
 			return
-		}
+		}*/
 		time.Sleep(time.Duration(time.Second / 60))
 	}
 }

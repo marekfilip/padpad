@@ -12,22 +12,23 @@ function Pad(canvas, sock, x, y) {
     this.draw = function() {
         this.context.fillStyle = '#FF0000';
         this.context.beginPath();
-        this.context.fillRect(this.x, this.y, this.length, 5);
+        this.context.fillRect(this.x - this.length/2, this.y, this.length, 5);
         this.context.fill();
     };
     this.updatePos = function(x) {
-        this.x = x - this.length / 2;
-        if (this.x < 0) this.x = 0;
-        if ((this.x + this.length) > this.canvasWidth) this.x = this.canvasWidth - this.length;
         if(sock !== null){
             this.sock.send(JSON.stringify({
                 't': 2,
                 'd': {
-                    'pX': this.x
+                    'pX': x
                 }
             }));
         }
     };
+    this.setPos = function(x, y) {
+        this.x = x;
+        this.y = y;
+    }
     this.getPos = function() {
         return {
             xLeft: this.x,
