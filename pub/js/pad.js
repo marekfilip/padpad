@@ -9,10 +9,19 @@ function Pad(canvas, sock, x, y) {
     this.context = canvas.getContext('2d');
     this.canvasHeight = canvas.height;
     this.canvasWidth = canvas.width;
-    this.draw = function() {
+    this.draw = function(canH) {
+        var drawX = this.x - this.length/2;
+
+        if(drawX<0){
+            drawX = 0;
+        }
+        if(drawX > canH){
+            drawX = canH - (this.length/2);
+        }
+
         this.context.fillStyle = '#FF0000';
         this.context.beginPath();
-        this.context.fillRect(this.x - this.length/2, this.y, this.length, 5);
+        this.context.fillRect(drawX, this.y, this.length, 5);
         this.context.fill();
     };
     this.updatePos = function(x) {

@@ -49,8 +49,8 @@ var sock = null,
             if (player !== null && ball !== null /*&& opponent !== null*/) {
                 can.getContext('2d').clearRect(0, 0, can.width, can.height);
                 ball.draw();
-                player.draw();
-                //opponent.draw();
+                player.draw(can.height);
+                //opponent.draw(can.height);
             }
         }, 17)
         can.onmousemove = function(e) {

@@ -139,8 +139,8 @@ func (c *Client) Decode(msg *message.Message) {
 			x = 0
 		}
 
-		if (x + c.Pad.Length) > c.CanvasWidth {
-			x = c.CanvasWidth - c.Pad.Length
+		if x > (c.CanvasHeight - c.Pad.Length) {
+			x = c.CanvasHeight - c.Pad.Length
 		}
 
 		c.Pad.UpdatePadPos(x, c.Pad.Y)
