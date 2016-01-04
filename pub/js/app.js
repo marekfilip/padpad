@@ -18,30 +18,36 @@ var sock = null,
         addMsg("Rozłączono");
     }
     sock.onmessage = function(e) {
-        var json = JSON.parse(e.data)
-        switch (json.t) {
-            case 3:
-                if(ball === null){
-                    ball = new Ball(can, json.d.x, json.d.y)
-                } else {
-                    ball.updatePosition(json.d.x, json.d.y);
+        var json = JSON.parse(e.data);
+        if (typeof json.length != 'undefined'){
+            for(var i=0; i < json.length; i++){
+                if(json[i] !== null){
+                    switch (json[i].t) {
+                        case 3:
+                            if(ball === null){
+                                ball = new Ball(can, json[i].d.x, json[i].d.y)
+                            } else {
+                                ball.updatePosition(json[i].d.x, json[i].d.y);
+                            }
+                            break;
+                        case 4:
+                            console.log('Player: X: ' + json[i].d.x +  ' Y: ' + json[i].d.y);
+                            if(player === null){
+                                player = new Pad(can, sock, json[i].d.x, json[i].d.y);
+                            } else {
+                                player.setPos(json[i].d.x, json[i].d.y);
+                            }
+                            break;
+                        case 5:
+                            //console.log('Opponent: X: ' + json[i].d.x +  ' Y: ' + json[i].d.y);
+                            if(opponent === null){
+                                opponent = new Pad(can, null, json[i].d.x, json[i].d.y);
+                            } else {
+                                opponent.setPos(json[i].d.x);
+                            }
+                    }
                 }
-                break;
-            case 4:
-                console.log('Player: X: ' + json.d.x +  ' Y: ' + json.d.y);
-                if(player === null){
-                    player = new Pad(can, sock, json.d.x, json.d.y);
-                } else {
-                    player.setPos(json.d.x, json.d.y);
-                }
-                break;
-            case 5:
-                //console.log('Opponent: X: ' + json.d.x +  ' Y: ' + json.d.y);
-                if(opponent === null){
-                    opponent = new Pad(can, null, json.d.x, json.d.y);
-                } else {
-                    opponent.setPos(json.d.x);
-                }
+            }
         }
     }
     if (can.getContext) {

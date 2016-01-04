@@ -1,6 +1,7 @@
 package server
 
 import (
+	"padpad/server/message"
 	"padpad/server/objects"
 	"time"
 )
@@ -35,20 +36,30 @@ func (g *Game) AddPlayer(c *Client) bool {
 
 func (g *Game) Start() {
 	var b *objects.Ball = objects.NewBall(0, 0, g.Height, g.Width)
+	var forP1 [3]*message.Message
+	var forP2 [3]*message.Message
 
 	for {
 		b.Update()
 		if g.Player1 != nil {
-			g.Player1.ch <- b
+			forP1[0] = b.Encode()
+			forP1[1] = g.Player1.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE)
+			//g.Player1.ch <- b
 			if g.Player2 != nil {
-				g.Player1.opponentPad <- g.Player2.Pad
+				//g.Player1.opponentPad <- g.Player2.Pad
+				forP1[2] = g.Player2.Pad.Encode(message.OPPONENT_PAD_POSITION_TYPE)
 			}
+			g.Player1.toSend <- forP1
 		}
 		if g.Player2 != nil {
-			g.Player2.ch <- b
+			forP2[0] = b.Encode()
+			forP2[1] = g.Player2.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE)
+			//g.Player2.ch <- b
 			if g.Player1 != nil {
-				g.Player2.opponentPad <- g.Player1.Pad
+				//g.Player2.opponentPad <- g.Player1.Pad
+				forP2[2] = g.Player1.Pad.Encode(message.OPPONENT_PAD_POSITION_TYPE)
 			}
+			g.Player2.toSend <- forP2
 		}
 
 		/*if g.Player1 == nil || g.Player2 == nil {

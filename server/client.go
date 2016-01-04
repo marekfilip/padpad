@@ -24,6 +24,7 @@ type Client struct {
 	ch           chan *objects.Ball
 	playerPad    chan *objects.Pad
 	opponentPad  chan *objects.Pad
+	toSend       chan [3]*message.Message
 }
 
 func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
@@ -40,6 +41,7 @@ func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
 		make(chan *objects.Ball, channelBufSize),
 		make(chan *objects.Pad, channelBufSize),
 		make(chan *objects.Pad, channelBufSize),
+		make(chan [3]*message.Message, channelBufSize),
 	}
 }
 
@@ -61,17 +63,20 @@ func (c *Client) StartGame() bool {
 // Listen write request via chanel
 func (c *Client) listenWrite() {
 	log.Println("Listening write to client")
+	//var toSend [3]*message.Message
 	for {
 		select {
-		// send opponent pad position
-		case msg := <-c.opponentPad:
-			websocket.JSON.Send(c.WebService, msg.Encode(message.OPPONENT_PAD_POSITION_TYPE))
-		// clients pad position
-		case msg := <-c.playerPad:
-			websocket.JSON.Send(c.WebService, msg.Encode(message.PLAYER_PAD_POSITION_TYPE))
+		case msgs := <-c.toSend:
+			websocket.JSON.Send(c.WebService, msgs)
 		// send ball position to client
 		case msg := <-c.ch:
 			websocket.JSON.Send(c.WebService, msg.Encode())
+		// clients pad position
+		case msg := <-c.playerPad:
+			websocket.JSON.Send(c.WebService, msg.Encode(message.PLAYER_PAD_POSITION_TYPE))
+		// send opponent pad position
+		case msg := <-c.opponentPad:
+			websocket.JSON.Send(c.WebService, msg.Encode(message.OPPONENT_PAD_POSITION_TYPE))
 		// receive done request
 		case <-c.doneCh:
 			if c.Game != nil {
@@ -113,10 +118,6 @@ func (c *Client) listenRead() {
 	}
 }
 
-/*
-	Dokończyć metodę dekodującą dane przychodzące
-*/
-
 func (c *Client) Decode(msg *message.Message) {
 	switch {
 	case msg.MessageType == message.STARTGAME_TYPE:
@@ -131,7 +132,7 @@ func (c *Client) Decode(msg *message.Message) {
 		fmt.Println("Player:", c.Pad)
 		websocket.JSON.Send(c.WebService, c.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE))
 		break
-	case msg.MessageType == message.PAD_POSITION_TYPE:
+	case msg.MessageType == message.INC_PAD_POSITION_TYPE:
 		var x float32 = msg.Data["pX"]
 		//fmt.Println(c.Id, "received podposition:", *msg)
 
