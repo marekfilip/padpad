@@ -3,8 +3,13 @@
 }
 
 #game {
-	border-top: solid;
 	border-left: solid;
 	border-right: solid;
 	border-width: 1px;
 }
+
+#controls, #point-box { margin: 10px; text-align: center; }
+#controls > *, #points > * { margin: 5px; float: left; }
+#point-box > * { margin: 5px;}
+
+ 

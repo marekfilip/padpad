@@ -11,8 +11,8 @@ type Game struct {
 	Queue   *Games
 	Player1 *Client
 	Player2 *Client
-	Height  int
-	Width   int
+	Height  float32
+	Width   float32
 }
 
 func NewGame(q *Games) *Game {
@@ -35,36 +35,45 @@ func (g *Game) AddPlayer(c *Client) bool {
 }
 
 func (g *Game) Start() {
-	var b *objects.Ball = objects.NewBall(0, 0, g.Height, g.Width)
+	var b *objects.Ball = objects.NewBall(g.Width/2, g.Height/2, g.Height, g.Width, g.Player1.Pad, g.Player2.Pad)
 	var forP1 [3]*message.Message
 	var forP2 [3]*message.Message
+	var ballReturn uint8 = 0
 
 	for {
-		b.Update()
+		ballReturn = b.Update()
+
+		switch ballReturn {
+		case 1:
+			if g.Player1 != nil {
+				g.Player1.AddPoint()
+			}
+		case 2:
+			if g.Player2 != nil {
+				g.Player2.AddPoint()
+			}
+		}
+
 		if g.Player1 != nil {
 			forP1[0] = b.Encode()
-			forP1[1] = g.Player1.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE)
-			//g.Player1.ch <- b
+			forP1[1] = g.Player1.Encode(message.PLAYER_PAD_POSITION_TYPE, g.Width, true)
 			if g.Player2 != nil {
-				//g.Player1.opponentPad <- g.Player2.Pad
-				forP1[2] = g.Player2.Pad.Encode(message.OPPONENT_PAD_POSITION_TYPE)
+				forP1[2] = g.Player2.Encode(message.OPPONENT_PAD_POSITION_TYPE, g.Width, true)
 			}
 			g.Player1.toSend <- forP1
 		}
 		if g.Player2 != nil {
 			forP2[0] = b.Encode()
-			forP2[1] = g.Player2.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE)
-			//g.Player2.ch <- b
+			forP2[1] = g.Player2.Encode(message.PLAYER_PAD_POSITION_TYPE, g.Width, true)
 			if g.Player1 != nil {
-				//g.Player2.opponentPad <- g.Player1.Pad
-				forP2[2] = g.Player1.Pad.Encode(message.OPPONENT_PAD_POSITION_TYPE)
+				forP2[2] = g.Player1.Encode(message.OPPONENT_PAD_POSITION_TYPE, g.Width, true)
 			}
 			g.Player2.toSend <- forP2
 		}
 
-		/*if g.Player1 == nil || g.Player2 == nil {
+		if g.Player1 == nil || g.Player2 == nil {
 			return
-		}*/
+		}
 		time.Sleep(time.Duration(time.Second / 60))
 	}
 }

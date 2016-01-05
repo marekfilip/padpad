@@ -14,10 +14,9 @@ type Server struct {
 	addClientChan chan *Client
 	delClientChan chan *Client
 	startCh       chan *Client
-	/*addGameChan   chan *Game*/
-	delGameChan chan *Game
-	doneCh      chan bool
-	errCh       chan error
+	delGameChan   chan *Game
+	doneCh        chan bool
+	errCh         chan error
 }
 
 func NewServer(pattern string) *Server {
@@ -108,9 +107,10 @@ func (s *Server) Listen() {
 			}
 			c.Game = tempGame
 			c.Game.AddPlayer(c)
-			//if c.Game.BothPlayersPresent() {
-			go c.Game.Start()
-			//}
+			c.RemovePoints()
+			if c.Game.BothPlayersPresent() {
+				go c.Game.Start()
+			}
 			log.Println("Starting new game. Now", s.Games.Len(), "games online.")
 		case err := <-s.errCh:
 			log.Println("Error:", err.Error())

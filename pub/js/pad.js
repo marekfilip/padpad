@@ -1,27 +1,15 @@
-function Pad(canvas, sock, x, y) {
+function Pad(canvas, sock, x, y, l) {
     this.sock = sock;
-    this.length = canvas.width / 8;
-    //this.x = canvas.width / 2 - this.length / 2;
-    this.x = x;
-    //this.y = canvas.height - 20;
-    this.y = y;
-    this.canvas = canvas;
     this.context = canvas.getContext('2d');
-    this.canvasHeight = canvas.height;
-    this.canvasWidth = canvas.width;
-    this.draw = function(canH) {
-        var drawX = this.x - this.length/2;
 
-        if(drawX<0){
-            drawX = 0;
-        }
-        if(drawX > canH){
-            drawX = canH - (this.length/2);
-        }
+    this.x = x;
+    this.y = y;
+    this.length = l;
 
+    this.draw = function(canW) {
         this.context.fillStyle = '#FF0000';
         this.context.beginPath();
-        this.context.fillRect(drawX, this.y, this.length, 5);
+        this.context.fillRect(this.x, this.y, this.length, 5);
         this.context.fill();
     };
     this.updatePos = function(x) {

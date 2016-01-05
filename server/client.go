@@ -13,7 +13,7 @@ const channelBufSize = 100
 
 type Client struct {
 	Id           int
-	Points       uint
+	Points       uint16
 	CanvasHeight float32
 	CanvasWidth  float32
 	WebService   *websocket.Conn
@@ -21,9 +21,6 @@ type Client struct {
 	Game         *Game
 	Pad          *objects.Pad
 	doneCh       chan bool
-	ch           chan *objects.Ball
-	playerPad    chan *objects.Pad
-	opponentPad  chan *objects.Pad
 	toSend       chan [3]*message.Message
 }
 
@@ -38,11 +35,22 @@ func NewClient(id int, ws *websocket.Conn, server *Server) *Client {
 		nil,
 		objects.NewPad(0, 0),
 		make(chan bool),
-		make(chan *objects.Ball, channelBufSize),
-		make(chan *objects.Pad, channelBufSize),
-		make(chan *objects.Pad, channelBufSize),
 		make(chan [3]*message.Message, channelBufSize),
 	}
+}
+
+func (c *Client) AddPoint() {
+	c.Points++
+}
+
+func (c *Client) RemovePoint() {
+	if c.Points != 0 {
+		c.Points--
+	}
+}
+
+func (c *Client) RemovePoints() {
+	c.Points = 0
 }
 
 func (c *Client) Done() {
@@ -63,20 +71,10 @@ func (c *Client) StartGame() bool {
 // Listen write request via chanel
 func (c *Client) listenWrite() {
 	log.Println("Listening write to client")
-	//var toSend [3]*message.Message
 	for {
 		select {
 		case msgs := <-c.toSend:
 			websocket.JSON.Send(c.WebService, msgs)
-		// send ball position to client
-		case msg := <-c.ch:
-			websocket.JSON.Send(c.WebService, msg.Encode())
-		// clients pad position
-		case msg := <-c.playerPad:
-			websocket.JSON.Send(c.WebService, msg.Encode(message.PLAYER_PAD_POSITION_TYPE))
-		// send opponent pad position
-		case msg := <-c.opponentPad:
-			websocket.JSON.Send(c.WebService, msg.Encode(message.OPPONENT_PAD_POSITION_TYPE))
 		// receive done request
 		case <-c.doneCh:
 			if c.Game != nil {
@@ -130,24 +128,43 @@ func (c *Client) Decode(msg *message.Message) {
 		c.Pad.UpdatePadLength(c.CanvasWidth / 8)
 		c.StartGame()
 		fmt.Println("Player:", c.Pad)
-		websocket.JSON.Send(c.WebService, c.Pad.Encode(message.PLAYER_PAD_POSITION_TYPE))
 		break
 	case msg.MessageType == message.INC_PAD_POSITION_TYPE:
 		var x float32 = msg.Data["pX"]
-		//fmt.Println(c.Id, "received podposition:", *msg)
 
 		if x < 0 {
 			x = 0
 		}
 
-		if x > (c.CanvasHeight - c.Pad.Length) {
-			x = c.CanvasHeight - c.Pad.Length
+		if x > c.CanvasWidth {
+			x = c.CanvasWidth
 		}
 
 		c.Pad.UpdatePadPos(x, c.Pad.Y)
-		c.playerPad <- c.Pad
 		break
 	default:
 		fmt.Println("Unrecognized msg:", *msg)
+	}
+}
+
+func (c *Client) Encode(msgType int, canvasWidth float32, usePadLengthTransition bool) *message.Message {
+	var x = c.Pad.X
+	if usePadLengthTransition {
+		x = c.Pad.X - (c.Pad.Length / 2)
+		if x < 0 {
+			x = 0
+		}
+		if x > (canvasWidth - c.Pad.Length) {
+			x = canvasWidth - c.Pad.Length
+		}
+	}
+	return &message.Message{
+		msgType,
+		map[string]float32{
+			"x": x,
+			"y": c.Pad.Y,
+			"l": c.Pad.Length,
+			"p": float32(c.Points),
+		},
 	}
 }

@@ -1,8 +1,5 @@
 package objects
 
-import "padpad/server/message"
-import "fmt"
-
 type Pad struct {
 	X      float32
 	Y      float32
@@ -14,7 +11,6 @@ func NewPad(x, y float32) *Pad {
 }
 
 func (p *Pad) UpdatePadPos(x, y float32) {
-	fmt.Println("Updating pad position X:", p.X, "Y:", p.Y)
 	p.X = x
 	p.Y = y
 }
@@ -23,12 +19,18 @@ func (p *Pad) UpdatePadLength(l float32) {
 	p.Length = l
 }
 
-func (p *Pad) Encode(msgType int) *message.Message {
-	return &message.Message{
-		msgType,
-		map[string]float32{
-			"x": p.X,
-			"y": p.Y,
-		},
+func (p *Pad) GetPadRange(canvasWidth float32) map[string]float32 {
+	var xl, xr float32
+
+	xl = p.X
+	if xl > (canvasWidth - p.Length) {
+		xl = canvasWidth - p.Length
+	}
+	xr = xl + p.Length
+
+	return map[string]float32{
+		"XLeft":  xl,
+		"XRight": xr,
+		"Y":      p.Y,
 	}
 }

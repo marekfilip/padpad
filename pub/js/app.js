@@ -31,19 +31,19 @@ var sock = null,
                             }
                             break;
                         case 4:
-                            console.log('Player: X: ' + json[i].d.x +  ' Y: ' + json[i].d.y);
                             if(player === null){
-                                player = new Pad(can, sock, json[i].d.x, json[i].d.y);
+                                player = new Pad(can, sock, json[i].d.x, json[i].d.y, json[i].d.l);
                             } else {
                                 player.setPos(json[i].d.x, json[i].d.y);
+                                document.getElementById('player-points').innerHTML = json[i].d.p;
                             }
                             break;
                         case 5:
-                            //console.log('Opponent: X: ' + json[i].d.x +  ' Y: ' + json[i].d.y);
                             if(opponent === null){
-                                opponent = new Pad(can, null, json[i].d.x, json[i].d.y);
+                                opponent = new Pad(can, null, json[i].d.x, json[i].d.y, json[i].d.l);
                             } else {
-                                opponent.setPos(json[i].d.x);
+                                opponent.setPos(json[i].d.x, json[i].d.y);
+                                document.getElementById('opponent-points').innerHTML = json[i].d.p;
                             }
                     }
                 }
@@ -52,11 +52,11 @@ var sock = null,
     }
     if (can.getContext) {
         setInterval(function() {
-            if (player !== null && ball !== null /*&& opponent !== null*/) {
+            if (player !== null && ball !== null && opponent !== null) {
                 can.getContext('2d').clearRect(0, 0, can.width, can.height);
                 ball.draw();
-                player.draw(can.height);
-                //opponent.draw(can.height);
+                player.draw();
+                opponent.draw();
             }
         }, 17)
         can.onmousemove = function(e) {
@@ -68,7 +68,7 @@ var sock = null,
 })();
 
 function addMsg(msg) {
-    var el = document.getElementById('msgBox'),
+    var el = document.getElementById('message-box'),
         elChild = document.createElement('div');
     elChild.innerHTML = msg;
     el.insertBefore(elChild, el.firstChild);

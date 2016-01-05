@@ -7,12 +7,20 @@
     </head>
     <body>
         <div class="main">
+            <div id="point-box">
+                <div>Player - Opponent</div>
+                <div id="points">
+                    <div id="player-points">0</div>:<div id="opponent-points">0</div>
+                </div>
+            </div>
             <canvas id="game" width="300" height="400">
-                This text is displayed if your browser does not support HTML5 Canvas. Try later browser.
+            This text is displayed if your browser does not support HTML5 Canvas. Try later browser.
             </canvas>
-            <div>
-                <button id="start-game" style="display: none" onclick="startGame()">Start game</button>
-                <div id="msgBox"></div>
+            <div id="controls">
+                <div class="buttons">
+                    <button id="start-game" style="display: none" onclick="startGame()">Start game</button>
+                </div>
+                <div id="message-box"></div>
             </div>
         </div>
         <script type="text/javascript" src="/js/ball.js"></script>
