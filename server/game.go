@@ -22,12 +22,12 @@ func NewGame(q *Games) *Game {
 func (g *Game) AddPlayer(c *Client) bool {
 	if g.Player1 == nil {
 		g.Player1 = c
-		c.Pad.UpdatePadPos(float32(g.Player1.CanvasWidth/2-g.Player1.Pad.Length/2), float32(15))
+		c.Pad.UpdatePadPos(float32(g.Player1.CanvasWidth/2-g.Player1.Pad.Length/2), float32(20))
 		return true
 	}
 	if g.Player2 == nil {
 		g.Player2 = c
-		c.Pad.UpdatePadPos(float32(g.Player2.CanvasWidth/2-g.Player2.Pad.Length/2), float32(g.Player2.CanvasHeight-15))
+		c.Pad.UpdatePadPos(float32(g.Player2.CanvasWidth/2-g.Player2.Pad.Length/2), float32(g.Player2.CanvasHeight-20))
 		return true
 	}
 

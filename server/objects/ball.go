@@ -1,6 +1,7 @@
 package objects
 
 import "padpad/server/message"
+import "fmt"
 
 const (
 	UP, LEFT    int = -1, -1
@@ -44,20 +45,24 @@ func NewBall(startx, starty, h, w float32, p1, p2 *Pad) *Ball {
 func (b *Ball) Update() uint8 {
 	var tempPadRange map[string]float32
 
-	tempPadRange = b.Player1.GetPadRange(b.CanvasWidth)
-	if (int(b.Y) == int(tempPadRange["Y"])) && b.X >= tempPadRange["XLeft"] && b.X <= tempPadRange["XRight"] {
-		b.DirY = DOWN
-		b.Speed += 0.05
+	if int(b.Y) == int(b.Player1.Y) {
+		tempPadRange = b.Player1.GetPadRange(b.CanvasWidth)
+		fmt.Println("Przeleciało przez 1\nbX:", b.X, "\ntempPadRange:", tempPadRange, "\n")
+		if b.X >= tempPadRange["XLeft"] && b.X <= tempPadRange["XRight"] {
+			fmt.Println("Zmiana przez 1")
+			b.DirY = UP
+			b.Speed += 0.05
+		}
 	}
-	tempPadRange = b.Player2.GetPadRange(b.CanvasWidth)
-	if (int(b.Y) == int(tempPadRange["Y"])) && b.X >= tempPadRange["XLeft"] && b.X <= tempPadRange["XRight"] {
-		b.DirY = DOWN
-		b.Speed += 0.05
+	if int(b.Y) == int(b.Player2.Y) {
+		tempPadRange = b.Player2.GetPadRange(b.CanvasWidth)
+		fmt.Println("Przeleciało przez 2\nbX:", b.X, "\ntempPadRange:", tempPadRange, "\n")
+		if b.X >= tempPadRange["XLeft"] && b.X <= tempPadRange["XRight"] {
+			fmt.Println("Zmiana przez 2")
+			b.DirY = DOWN
+			b.Speed += 0.05
+		}
 	}
-	/*	if ((padpos.y >= (Math.round(b.Y) + 4) && padpos.y <= (Math.round(this.y) + 7)) && b.X >= padpos.xLeft && b.X <= padpos.xRight) {
-	    b.DirY = -1;
-	    b.Speed += 0.05;
-	}*/
 	if b.X >= float32(b.CanvasWidth-7) {
 		b.DirX = LEFT
 		b.Speed += 0.05
@@ -81,7 +86,7 @@ func (b *Ball) Update() uint8 {
 		return 2
 	}
 
-	b.X = b.X + float32(b.AngleX*float32(b.DirX))*b.Speed
+	//b.X = b.X + float32(b.AngleX*float32(b.DirX))*b.Speed
 	b.Y = b.Y + float32(b.AngleY*float32(b.DirY))*b.Speed
 	if b.X < 7 {
 		b.X = 7
