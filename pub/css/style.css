@@ -8,8 +8,19 @@
 	border-width: 1px;
 }
 
-#controls, #point-box { margin: 10px; text-align: center; }
-#controls > *, #points > * { margin: 5px; float: left; }
-#point-box > * { margin: 5px;}
+#controls, #point-box {
+	margin: 10px;
+	text-align: center;
+}
 
- 
+#points {
+	margin-left: auto;
+    margin-right: auto;
+    width: 5em;
+    display: flex;
+}
+
+#controls > *, #points > * {
+	margin: 5px;
+	float: left;
+}
