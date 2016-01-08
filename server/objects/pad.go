@@ -22,10 +22,14 @@ func (p *Pad) UpdatePadLength(l float32) {
 func (p *Pad) GetPadRange(canvasWidth float32) map[string]float32 {
 	var xl, xr float32
 
-	xl = p.X
+	xl = p.X - (p.Length / 2)
+	if xl < 0 {
+		xl = 0
+	}
 	if xl > (canvasWidth - p.Length) {
 		xl = canvasWidth - p.Length
 	}
+
 	xr = xl + p.Length
 
 	return map[string]float32{
