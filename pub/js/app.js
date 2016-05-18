@@ -5,10 +5,47 @@ var sock = null,
     player = null,
     opponent = null;
 
+function touchHandler(event)
+{
+    var touches = event.changedTouches,
+        first = touches[0],
+        type = "";
+    switch(event.type)
+    {
+        case "touchstart": type = "mousedown"; break;
+        case "touchmove":  type = "mousemove"; break;        
+        case "touchend":   type = "mouseup";   break;
+        default:           return;
+    }
+
+    // initMouseEvent(type, canBubble, cancelable, view, clickCount, 
+    //                screenX, screenY, clientX, clientY, ctrlKey, 
+    //                altKey, shiftKey, metaKey, button, relatedTarget);
+
+    var simulatedEvent = document.createEvent("MouseEvent");
+    simulatedEvent.initMouseEvent(type, true, true, window, 1, 
+                                  first.screenX, first.screenY, 
+                                  first.clientX, first.clientY, false, 
+                                  false, false, false, 0/*left*/, null);
+
+    first.target.dispatchEvent(simulatedEvent);
+    event.preventDefault();
+}
+
+function init() 
+{
+    document.addEventListener("touchstart", touchHandler, true);
+    document.addEventListener("touchmove", touchHandler, true);
+    document.addEventListener("touchend", touchHandler, true);
+    document.addEventListener("touchcancel", touchHandler, true);    
+}
+
 (function() {
-    sock = new WebSocket("ws://127.0.0.1:12345/handler");
+    sock = new WebSocket("ws://"+document.location.hostname+":12345/handler");
     button = document.getElementById('start-game');
     can = document.getElementById('game');
+
+    init();
 
     button.setAttribute('style', 'display: block');
     sock.onopen = function(e) {
