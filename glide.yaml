@@ -1,0 +1,5 @@
+package: padpad
+import:
+- package: golang.org/x/net
+  subpackages:
+  - websocket
